@@ -1,0 +1,9 @@
+{
+	"Id": "VRCameraZoom",
+	"DisplayName": "VR Camera Zoom",
+	"Author": "fauxnik",
+	"Version": "1.0.0",
+	"AssemblyName": "VRCameraZoomMod.dll",
+	"EntryMethod": "VRCameraZoomMod.Main.Load",
+	"Repository": ""
+}
