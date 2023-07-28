@@ -1,0 +1,10 @@
+{
+	"Id": "VRCameraZoom",
+	"Version": "2.0.0",
+	"DisplayName": "VR Zoom",
+	"Author": "fauxnik",
+	"AssemblyName": "VRZoom.dll",
+	"EntryMethod": "VRZoom.Main.Load",
+	"ManagerVersion": "0.27.3",
+	"Repository": "https://github.com/fauxnik/dv-vr-zoom/blob/main/repository.json"
+}
