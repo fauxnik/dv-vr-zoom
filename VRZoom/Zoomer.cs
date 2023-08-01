@@ -41,5 +41,6 @@ class Zoomer : MonoBehaviour
 			yield return null;
 		}
 		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: complete");
+		zoomCoroutine = null;
 	}
 }
