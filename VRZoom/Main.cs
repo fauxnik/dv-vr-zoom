@@ -23,6 +23,15 @@ public static class Main
 
 		try
 		{
+			Settings.Load(modEntry);
+		}
+		catch (Exception ex)
+		{
+			modEntry.Logger.LogException($"Failed to load settings for {modEntry.Info.DisplayName}:", ex);
+		}
+
+		try
+		{
 			LogDebug?.Invoke($"Patching assembly…");
 			harmony = new Harmony(modEntry.Info.Id);
 			harmony.PatchAll(Assembly.GetExecutingAssembly());
