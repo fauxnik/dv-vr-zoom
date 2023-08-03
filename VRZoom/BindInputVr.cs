@@ -6,7 +6,6 @@ namespace VRZoom;
 static class BindInputVr
 {
 	private static bool zoomRequested = false;
-	private static Zoomer? zoomer;
 
 	static void Postfix(LocomotionInputVr __instance)
 	{
@@ -15,7 +14,9 @@ static class BindInputVr
 		if (wasZoomRequested != zoomRequested)
 		{
 			Main.LogDebug?.Invoke("Change in zoom request detected!");
-			zoomer ??= Zoomer.CreateComponent(PlayerManager.PlayerCamera.gameObject, PlayerManager.PlayerCamera.fieldOfView);
+			Zoomer zoomer =
+				PlayerManager.PlayerCamera.gameObject.GetComponent<Zoomer>() ??
+				Zoomer.CreateComponent(PlayerManager.PlayerCamera.gameObject, PlayerManager.PlayerCamera.fieldOfView);
 			zoomer.Zoom(zoomRequested);
 		}
 	}
