@@ -13,6 +13,10 @@ class Zoomer : MonoBehaviour
 		return zoomer;
 	}
 
+	private IEnumerator? zoomCoroutine;
+	private float currentZoomVelocity = 0f;
+	private float hmdFieldOfView;
+
 	public void Zoom(bool zoomIn)
 	{
 		if (zoomCoroutine != null)
@@ -21,14 +25,11 @@ class Zoomer : MonoBehaviour
 			StopCoroutine(zoomCoroutine);
 		}
 		Main.LogDebug?.Invoke($"Starting zoom coroutine with zoom={(zoomIn ? "in" : "out")}");
-		zoomCoroutine = StartCoroutine(DoZoom(zoomIn));
+		zoomCoroutine = StartZoomCoroutine(zoomIn);
+		StartCoroutine(zoomCoroutine);
 	}
 
-	private Coroutine? zoomCoroutine;
-	private float currentZoomVelocity = 0f;
-	private float hmdFieldOfView;
-
-	private IEnumerator DoZoom(bool zoomIn)
+	private IEnumerator StartZoomCoroutine(bool zoomIn)
 	{
 		int iteration = 0;
 		float targetZoomFactor = zoomIn ? hmdFieldOfView / Settings.Instance.ZoomedFOV : 1f;
