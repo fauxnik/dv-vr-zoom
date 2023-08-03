@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using System;
-using System.Reflection;
 using UnityModManagerNet;
 
 namespace VRZoom;
@@ -34,7 +33,7 @@ public static class Main
 		{
 			LogDebug?.Invoke($"Patching assembly…");
 			harmony = new Harmony(modEntry.Info.Id);
-			harmony.PatchAll(Assembly.GetExecutingAssembly());
+			harmony.PatchAll();
 
 			modEntry.OnGUI = Settings.Instance.Draw;
 			modEntry.OnSaveGUI = Settings.Instance.Save;
