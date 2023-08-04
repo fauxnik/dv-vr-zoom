@@ -1,3 +1,4 @@
+using System;
 using UnityModManagerNet;
 
 namespace VRZoom;
@@ -8,7 +9,23 @@ public class Settings
 	public static Settings Instance { get { return instance ??= new Settings(); } }
 	private static Settings? instance;
 
-	private Settings() { internalSettings = new VRZoomSettings(); }
+	public static void Load(UnityModManager.ModEntry modEntry)
+	{
+		instance = new Settings(modEntry);
+	}
+
+	private Settings(UnityModManager.ModEntry? modEntry = null)
+	{
+		if (modEntry != null)
+			try
+			{
+				internalSettings = UnityModManager.ModSettings.Load<VRZoomSettings>(modEntry);
+				return;
+			}
+			catch (Exception) {}
+
+		internalSettings = new VRZoomSettings();
+	}
 	private readonly VRZoomSettings internalSettings;
 
 	public float ZoomedFOV
