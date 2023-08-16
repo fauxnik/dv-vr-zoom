@@ -6,5 +6,5 @@
 	"AssemblyName": "VRZoom.dll",
 	"EntryMethod": "VRZoom.Main.Load",
 	"ManagerVersion": "0.27.3",
-	"Repository": "https://github.com/fauxnik/dv-vr-zoom/blob/main/repository.json"
+	"Repository": "https://raw.githubusercontent.com/fauxnik/dv-vr-zoom/blob/main/repository.json"
 }
