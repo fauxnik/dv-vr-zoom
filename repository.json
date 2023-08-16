@@ -2,6 +2,11 @@
 	"Releases": [
 		{
 			"Id": "VRCameraZoom",
+			"Version": "2.0.2",
+			"DownloadUrl": "https://github.com/fauxnik/dv-vr-zoom/releases/download/v2.0.2/VRZoom_v2.0.2.zip"
+		},
+		{
+			"Id": "VRCameraZoom",
 			"Version": "2.0.1",
 			"DownloadUrl": "https://github.com/fauxnik/dv-vr-zoom/releases/download/v2.0.1/VRZoom_v2.0.1.zip"
 		},
