@@ -5,6 +5,14 @@
 	"Author": "fauxnik",
 	"AssemblyName": "VRZoom.dll",
 	"EntryMethod": "VRZoom.Main.Load",
+	"Requirements": [
+		"CameraManager",
+		"ThirdEye"
+	],
+	"LoadAfter": [
+		"CameraManager",
+		"ThirdEye"
+	],
 	"ManagerVersion": "0.27.3",
 	"Repository": "https://raw.githubusercontent.com/fauxnik/dv-vr-zoom/blob/main/repository.json"
 }

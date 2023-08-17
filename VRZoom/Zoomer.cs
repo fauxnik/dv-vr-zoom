@@ -1,4 +1,5 @@
 using System.Collections;
+using CameraManager;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -6,16 +7,21 @@ namespace VRZoom;
 
 class Zoomer : MonoBehaviour
 {
-	public static Zoomer CreateComponent(GameObject where, float fieldOfView)
+	/// <summary>
+	/// Adds a <c>Zoomer</c> component to the provided game object. The game object must already have an <c>AmalgamCamera</c> component at the time this method is called.
+	/// </summary>
+	/// <param name="where">A game object with an <c>AmalgamCamera</c> component.</param>
+	/// <returns>The <c>Zoomer</c> component instance.</returns>
+	public static Zoomer CreateComponent(GameObject where)
 	{
 		Zoomer zoomer = where.AddComponent<Zoomer>();
-		zoomer.hmdFieldOfView = fieldOfView;
+		zoomer.camera = where.GetComponent<AmalgamCamera>();
 		return zoomer;
 	}
 
 	private IEnumerator? zoomCoroutine;
+	private AmalgamCamera? camera;
 	private float currentZoomVelocity = 0f;
-	private float hmdFieldOfView;
 
 	public void Zoom(bool zoomIn)
 	{
@@ -31,16 +37,19 @@ class Zoomer : MonoBehaviour
 
 	private IEnumerator StartZoomCoroutine(bool zoomIn)
 	{
+		if (camera == null) { yield break; }
 		int iteration = 0;
-		float targetZoomFactor = zoomIn ? hmdFieldOfView / Settings.Instance.ZoomedFOV : 1f;
-		float zoomDuration = zoomIn ? Settings.Instance.ZoomInDuration : Settings.Instance.ZoomOutDuration;
-		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: {XRDevice.fovZoomFactor} -> {targetZoomFactor}");
-		while (!Mathf.Approximately(XRDevice.fovZoomFactor, targetZoomFactor))
+		float targetZoomFactor = zoomIn ? Main.settings.zoomFactor : 1f;
+		float zoomDuration = zoomIn ? Main.settings.zoomInDuration : Main.settings.zoomOutDuration;
+		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
+		yield return new WaitForEndOfFrame();
+		while (!Mathf.Approximately(camera.zoomFactor, targetZoomFactor))
 		{
-			XRDevice.fovZoomFactor = Mathf.SmoothDamp(XRDevice.fovZoomFactor, targetZoomFactor, ref currentZoomVelocity, zoomDuration);
+			camera.zoomFactor = Mathf.SmoothDamp(camera.zoomFactor, targetZoomFactor, ref currentZoomVelocity, zoomDuration);
 			Main.LogDebug?.Invoke($"Zoom coroutine[{++iteration:D6}]: {XRDevice.fovZoomFactor} -> {targetZoomFactor}");
-			yield return null;
+			yield return new WaitForEndOfFrame();
 		}
+		camera.zoomFactor = targetZoomFactor;
 		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: complete");
 		zoomCoroutine = null;
 	}
