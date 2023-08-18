@@ -15,6 +15,7 @@ public static class Main
 	public static Action<string>? LogDebug;
 #pragma warning restore CS0649
 	public static Settings settings = new Settings();
+	public static ModEntry? modEntry { get; private set; }
 
 	// Unity Mod Manage Wiki: https://wiki.nexusmods.com/index.php/Category:Unity_Mod_Manager
 	private static bool Load(ModEntry modEntry)
@@ -23,6 +24,7 @@ public static class Main
 		LogDebug = modEntry.Logger.Log;
 #endif
 		Harmony? harmony = null;
+		Main.modEntry = modEntry;
 
 		ModEntry? cameraManagerEntry = FindMod("CameraManager");
 		if (cameraManagerEntry == null || cameraManagerEntry.Active == false)
