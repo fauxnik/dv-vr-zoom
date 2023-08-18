@@ -19,6 +19,7 @@ class Zoomer : MonoBehaviour
 		return zoomer;
 	}
 
+	private const int viewportLayer = 31;
 	private IEnumerator? zoomCoroutine;
 	private AmalgamCamera? camera;
 	private RenderTexture? renderTexture;
@@ -42,7 +43,7 @@ class Zoomer : MonoBehaviour
 		quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		DestroyImmediate(quad.GetComponent<Collider>());
 		quad.transform.SetParent(camera.gameObject.transform, false);
-		quad.layer = 31;
+		quad.layer = viewportLayer;
 		camera.cullingMask &= ~(1 << quad.layer);
 
 		meshRenderer = quad.GetComponent<MeshRenderer>();
