@@ -39,12 +39,15 @@ class Zoomer : MonoBehaviour
 		int resHeight = Screen.height;
 		renderTexture = new RenderTexture(resWidth, resHeight, 24);
 		camera.targetTexture = renderTexture;
+		if (!Main.settings.showOnPC) { camera.enabled = false; }
 
 		quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		DestroyImmediate(quad.GetComponent<Collider>());
 		quad.transform.SetParent(camera.gameObject.transform, false);
+		quad.transform.localScale = new Vector3(quad.transform.localScale.y * resWidth / resHeight, quad.transform.localScale.y, quad.transform.localScale.z);
 		quad.layer = viewportLayer;
 		camera.cullingMask &= ~(1 << quad.layer);
+		PlayerManager.PlayerCamera.cullingMask |= 1 << quad.layer;
 
 		meshRenderer = quad.GetComponent<MeshRenderer>();
 		meshRenderer.enabled = false;
@@ -56,6 +59,8 @@ class Zoomer : MonoBehaviour
 
 	void OnSettingsChanged()
 	{
+		Main.LogDebug?.Invoke($"Settings changed {{\n\tzoomFactor: {Main.settings.zoomFactor}\n\tzoomInDuration: {Main.settings.zoomInDuration}\n\tzoomOutDuration: {Main.settings.zoomOutDuration}\n\tviewportMeters: {Main.settings.viewportMeters}\n\tshowOnPC: {Main.settings.showOnPC}\n}}");
+
 		if (camera != null)
 		{
 			if (zoomCoroutine == null) { camera.enabled = Main.settings.showOnPC; }
@@ -73,6 +78,8 @@ class Zoomer : MonoBehaviour
 
 	void OnPostRender()
 	{
+		Main.LogDebug?.Invoke($"OnPostRender {{\n\tcamera: {(camera == null ? "null" : camera.ToString())}\n\trenderTexture: {(renderTexture == null ? "null" : renderTexture.ToString())}\n\tActive: {Main.modEntry?.Active ?? false}\n\tshowOnPC: {Main.settings.showOnPC}}}");
+
 		if (camera == null || renderTexture == null || !(Main.modEntry?.Active ?? false)) { return; }
 
 		if (Main.settings.showOnPC)
@@ -102,7 +109,8 @@ class Zoomer : MonoBehaviour
 		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
 		yield return new WaitForEndOfFrame();
 		camera.enabled = true;
-		meshRenderer.enabled = true;
+		meshRenderer.enabled = zoomIn;
+		yield return new WaitForEndOfFrame();
 		while (!Mathf.Approximately(camera.zoomFactor, targetZoomFactor))
 		{
 			camera.zoomFactor = Mathf.SmoothDamp(camera.zoomFactor, targetZoomFactor, ref currentZoomVelocity, zoomDuration);
@@ -110,8 +118,7 @@ class Zoomer : MonoBehaviour
 			yield return new WaitForEndOfFrame();
 		}
 		camera.zoomFactor = targetZoomFactor;
-		if (!Main.settings.showOnPC) { camera.enabled = false; }
-		meshRenderer.enabled = false;
+		if (!zoomIn && !Main.settings.showOnPC) { camera.enabled = false; }
 		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: complete");
 		zoomCoroutine = null;
 	}
