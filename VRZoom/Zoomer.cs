@@ -25,6 +25,7 @@ class Zoomer : MonoBehaviour
 
 	private const int viewportLayer = 31;
 	private IEnumerator? zoomCoroutine;
+	private Camera? worldCamera;
 	private GameObject? quad;
 	private MeshRenderer? meshRenderer;
 	private float currentZoomVelocity = 0f;
@@ -52,7 +53,13 @@ class Zoomer : MonoBehaviour
 		quad.layer = viewportLayer;
 		// TODO: can we raise this above the World camera so it always appears in front of objects in the scene?
 		camera.cullingMask &= ~(1 << quad.layer);
-		CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
+		// CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
+		Camera.onPostRender += OnPostRender;
+		worldCamera = CameraAPI.CloneCamera(CameraAPI.GetCamera(World));
+		worldCamera.gameObject.transform.SetParent(CameraAPI.GetCamera(World).gameObject.transform, false);
+		worldCamera.cullingMask = 1 << quad.layer;
+		worldCamera.clearFlags = CameraClearFlags.Depth;
+		worldCamera.enabled = false;
 
 		meshRenderer = quad.GetComponent<MeshRenderer>();
 		meshRenderer.enabled = false;
@@ -76,6 +83,24 @@ class Zoomer : MonoBehaviour
 			quad.transform.localPosition = new Vector3(0, 0, Main.settings.viewportMeters);
 			quad.transform.localScale = new Vector3(Main.settings.viewportHeight * Screen.width / Screen.height, Main.settings.viewportHeight, quad.transform.localScale.z);
 		}
+	}
+
+	private void OnPostRender(Camera camera)
+	{
+		if (!(meshRenderer?.enabled ?? false) || camera != CameraAPI.GetCamera(World)) { return; }
+
+		// backup
+		// int cullingMask = camera.cullingMask;
+		// CameraClearFlags clearFlags = camera.clearFlags;
+
+		// modify & render
+		// camera.cullingMask = 1 << quad.layer;
+		// camera.clearFlags = CameraClearFlags.Nothing;
+		worldCamera?.Render();
+
+		// restore
+		// camera.cullingMask = cullingMask;
+		// camera.clearFlags = clearFlags;
 	}
 
 	public void Zoom(bool zoomIn)
