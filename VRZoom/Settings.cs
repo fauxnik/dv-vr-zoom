@@ -19,8 +19,8 @@ public class Settings : UnityModManager.ModSettings, IDrawable
 	[Draw("Distance from HMD to viewport (m)", Min = 0f)]
 	public float viewportMeters = 1f;
 
-	[Draw("Show the zoom camera on the PC monitor? (Enabling this may impact performance.)")]
-	public bool showOnPC = false;
+	[Draw("Height of viewport (m)", Min = 0f)]
+	public float viewportHeight = 1f;
 
 	public void OnChange() { OnSettingsChanged?.Invoke(); }
 
