@@ -5,6 +5,7 @@ using System.Collections;
 using ThirdEye;
 using UnityEngine;
 using static UnityEngine.Object;
+using UnityEngine.Rendering;
 
 namespace VRZoom;
 
@@ -55,7 +56,10 @@ class Zoomer : MonoBehaviour
 
 		meshRenderer = quad.GetComponent<MeshRenderer>();
 		meshRenderer.enabled = false;
+		meshRenderer.sharedMaterial.shader = Shader.Find("Unlit/Texture") ?? meshRenderer.sharedMaterial.shader;
 		meshRenderer.sharedMaterial.mainTexture = ThirdEye.Main.renderTexture;
+		meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+		meshRenderer.receiveShadows = false;
 
 		Settings.OnSettingsChanged += OnSettingsChanged;
 		OnSettingsChanged();
