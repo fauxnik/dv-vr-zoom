@@ -2,6 +2,7 @@ using CameraManager;
 using static CameraManager.CameraType;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VRZoom;
 
@@ -38,7 +39,7 @@ class Zoomer : MonoBehaviour
 
 		int resWidth = Screen.width;
 		int resHeight = Screen.height;
-		renderTexture = new RenderTexture(resWidth, resHeight, 24);
+		renderTexture = new RenderTexture(resWidth, resHeight, 32);
 		// camera.targetTexture = renderTexture;
 		camera.enabled = false; //Main.settings.showOnPC;
 
@@ -61,6 +62,20 @@ class Zoomer : MonoBehaviour
 		// Camera.onPreRender += OnPreRender;
 		// Camera.onPostRender += OnPostRender;
 
+		Canvas canvas = new GameObject("zoomer canvas").AddComponent<Canvas>();
+		// RectTransform canvasRect = canvas.gameObject.GetComponent<RectTransform>();
+		CanvasScaler scaler = canvas.gameObject.AddComponent<CanvasScaler>();
+		scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+		scaler.referenceResolution = new Vector2(1920, 1080);
+		// canvas.rectTransform.width = Screen.width;
+		// canvas.rectTransform.height = Screen.height;
+		canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+
+		RawImage rawImage = new GameObject("zoomer canvas rawimage").AddComponent<CanvasRenderer>().gameObject.AddComponent<RawImage>();
+		rawImage.transform.SetParent(canvas.transform, false);
+		rawImage.texture = renderTexture;
+
 		StartCoroutine(UpdateScreen());
 	}
 
@@ -68,10 +83,10 @@ class Zoomer : MonoBehaviour
 	{
 		Main.LogDebug?.Invoke($"Settings changed {{\n\tzoomFactor: {Main.settings.zoomFactor}\n\tzoomInDuration: {Main.settings.zoomInDuration}\n\tzoomOutDuration: {Main.settings.zoomOutDuration}\n\tviewportMeters: {Main.settings.viewportMeters}\n\tshowOnPC: {Main.settings.showOnPC}\n}}");
 
-		if (camera != null)
-		{
-			if (zoomCoroutine == null) { camera.enabled = Main.settings.showOnPC; }
-		}
+		// if (camera != null)
+		// {
+		// 	if (zoomCoroutine == null) { camera.enabled = Main.settings.showOnPC; }
+		// }
 		if (quad != null)
 		{
 			quad.transform.localPosition = new Vector3(0, 0, Main.settings.viewportMeters);
@@ -98,7 +113,7 @@ class Zoomer : MonoBehaviour
 
 		if (Main.settings.showOnPC && renderTexture != null)
 		{
-			Graphics.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), renderTexture);
+			// Graphics.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), renderTexture);
 		}
 	}
 

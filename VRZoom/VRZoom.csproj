@@ -17,6 +17,8 @@
 		<Reference Include="UnityEngine"/>
 		<Reference Include="UnityEngine.CoreModule"/>
 		<Reference Include="UnityEngine.PhysicsModule"/>
+		<Reference Include="UnityEngine.UI"/>
+		<Reference Include="UnityEngine.UIModule"/>
 	</ItemGroup>
 
 	<!-- Mod Loader -->
