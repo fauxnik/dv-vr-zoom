@@ -53,20 +53,20 @@ class Zoomer : MonoBehaviour
 		quad.layer = viewportLayer;
 		// TODO: can we raise this above the World camera so it always appears in front of objects in the scene?
 		camera.cullingMask &= ~(1 << quad.layer);
-		// CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
-		Camera.onPostRender += OnPostRender;
-		worldCamera = CameraAPI.CloneCamera(CameraAPI.GetCamera(World));
-		worldCamera.gameObject.transform.SetParent(CameraAPI.GetCamera(World).gameObject.transform, false);
-		worldCamera.cullingMask = 1 << quad.layer;
-		worldCamera.clearFlags = CameraClearFlags.Depth;
-		worldCamera.enabled = false;
+		CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
+		// Camera.onPostRender += OnPostRender;
+		// worldCamera = CameraAPI.CloneCamera(CameraAPI.GetCamera(World));
+		// worldCamera.gameObject.transform.SetParent(CameraAPI.GetCamera(World).gameObject.transform, false);
+		// worldCamera.cullingMask = 1 << quad.layer;
+		// worldCamera.clearFlags = CameraClearFlags.Depth;
+		// worldCamera.enabled = false;
 
 		meshRenderer = quad.GetComponent<MeshRenderer>();
-		meshRenderer.enabled = false;
-		meshRenderer.sharedMaterial.shader = Shader.Find("Unlit/Texture") ?? meshRenderer.sharedMaterial.shader;
 		meshRenderer.sharedMaterial.mainTexture = ThirdEye.Main.renderTexture;
-		meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
-		meshRenderer.receiveShadows = false;
+		meshRenderer.enabled = false;
+		// meshRenderer.sharedMaterial.shader = Shader.Find("Unlit/Texture") ?? meshRenderer.sharedMaterial.shader;
+		// meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+		// meshRenderer.receiveShadows = false;
 
 		Settings.OnSettingsChanged += OnSettingsChanged;
 		OnSettingsChanged();
@@ -85,23 +85,23 @@ class Zoomer : MonoBehaviour
 		}
 	}
 
-	private void OnPostRender(Camera camera)
-	{
-		if (!(meshRenderer?.enabled ?? false) || camera != CameraAPI.GetCamera(World)) { return; }
+	// private void OnPostRender(Camera camera)
+	// {
+	// 	if (!(meshRenderer?.enabled ?? false) || camera != CameraAPI.GetCamera(World)) { return; }
 
-		// backup
-		// int cullingMask = camera.cullingMask;
-		// CameraClearFlags clearFlags = camera.clearFlags;
+	// 	// backup
+	// 	// int cullingMask = camera.cullingMask;
+	// 	// CameraClearFlags clearFlags = camera.clearFlags;
 
-		// modify & render
-		// camera.cullingMask = 1 << quad.layer;
-		// camera.clearFlags = CameraClearFlags.Nothing;
-		worldCamera?.Render();
+	// 	// modify & render
+	// 	// camera.cullingMask = 1 << quad.layer;
+	// 	// camera.clearFlags = CameraClearFlags.Nothing;
+	// 	worldCamera?.Render();
 
-		// restore
-		// camera.cullingMask = cullingMask;
-		// camera.clearFlags = clearFlags;
-	}
+	// 	// restore
+	// 	// camera.cullingMask = cullingMask;
+	// 	// camera.clearFlags = clearFlags;
+	// }
 
 	public void Zoom(bool zoomIn)
 	{
@@ -118,25 +118,35 @@ class Zoomer : MonoBehaviour
 	private IEnumerator StartZoomCoroutine(bool zoomIn)
 	{
 		if (!isSetup && !Setup()) { yield break; }
+
 		AmalgamCamera? camera = ThirdEye.Main.camera;
 		if (camera == null || meshRenderer == null || Main.modEntry == null) { yield break; }
+
 		int iteration = 0;
 		float targetZoomFactor = zoomIn ? Main.settings.zoomFactor : 1f;
 		float zoomDuration = zoomIn ? Main.settings.zoomInDuration : Main.settings.zoomOutDuration;
+
 		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
-		yield return new WaitForEndOfFrame();
+
+		yield return null;
+
 		ThirdEye.Main.RequestRender(Main.modEntry.Info.Id, true);
 		meshRenderer.enabled = zoomIn;
-		yield return new WaitForEndOfFrame();
+
+		yield return null;
+
 		while (!Mathf.Approximately(camera.zoomFactor, targetZoomFactor))
 		{
 			camera.zoomFactor = Mathf.SmoothDamp(camera.zoomFactor, targetZoomFactor, ref currentZoomVelocity, zoomDuration);
 			Main.LogDebug?.Invoke($"Zoom coroutine[{++iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
-			yield return new WaitForEndOfFrame();
+			yield return null;
 		}
+
 		camera.zoomFactor = targetZoomFactor;
 		if (!zoomIn) { ThirdEye.Main.RequestRender(Main.modEntry.Info.Id, false); }
+
 		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: complete");
+
 		zoomCoroutine = null;
 	}
 }
