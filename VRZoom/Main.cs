@@ -41,7 +41,7 @@ public static class Main
 
 		try
 		{
-			Load<Settings>(modEntry);
+			settings = Load<Settings>(modEntry);
 		}
 		catch (Exception ex)
 		{
