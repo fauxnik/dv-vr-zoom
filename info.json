@@ -1,6 +1,6 @@
 {
 	"Id": "VRCameraZoom",
-	"Version": "3.0.0-beta.1",
+	"Version": "3.0.0-beta.2",
 	"DisplayName": "VR Zoom",
 	"Author": "fauxnik",
 	"AssemblyName": "VRZoom.dll",
