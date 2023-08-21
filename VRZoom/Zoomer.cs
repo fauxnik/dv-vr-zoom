@@ -33,19 +33,20 @@ class Zoomer : MonoBehaviour
 
 	private bool Setup()
 	{
-		Main.LogDebug?.Invoke("Setting up Zoomer component.");
+		Main.LogDebug("Setting up Zoomer component.");
 
 		if (Main.modEntry == null) { throw new InvalidOperationException("Main.modEntry must not be null when setting up Zoomer component."); }
 
 		if (isSetup)
 		{
-			Main.modEntry.Logger.Log("[Warning] Trying to set up a Zoomer component that's already been set up.");
+			Main.LogWarning("Trying to set up a Zoomer component that's already been set up.");
 			return false;
 		}
 
-		if (ThirdEye.Main.camera == null)
+		AmalgamCamera? camera = ThirdEye.Main.camera;
+		if (camera == null)
 		{
-			Main.modEntry.Logger.Log("[Error] Third Eye camera unavailable during Zoomer setup.");
+			Main.LogError("Third Eye camera unavailable during Zoomer setup.");
 			return false;
 		}
 
@@ -54,13 +55,11 @@ class Zoomer : MonoBehaviour
 		bundle.Unload(false);
 		if (viewportShader == null)
 		{
-			Main.modEntry.Logger.Log("[Error] The viewport shader is missing.");
+			Main.LogError("The viewport shader is missing.");
 			return false;
 		}
 
-		AmalgamCamera camera = ThirdEye.Main.camera;
-
-		Main.LogDebug?.Invoke("Setting up viewport quad primitive.");
+		Main.LogDebug("Setting up viewport quad primitive.");
 		quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		DestroyImmediate(quad.GetComponent<Collider>());
 		quad.transform.SetParent(camera.gameObject.transform, false);
@@ -68,24 +67,24 @@ class Zoomer : MonoBehaviour
 		camera.cullingMask &= ~(1 << quad.layer);
 		CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
 
-		Main.LogDebug?.Invoke("Setting up viewport mesh renderer.");
+		Main.LogDebug("Setting up viewport mesh renderer.");
 		meshRenderer = quad.GetComponent<MeshRenderer>();
 		meshRenderer.sharedMaterial.shader = viewportShader;
 		meshRenderer.sharedMaterial.mainTexture = ThirdEye.Main.renderTexture;
 		meshRenderer.sharedMaterial.renderQueue = (int)RenderQueue.Overlay;
 		meshRenderer.enabled = false;
 
-		Main.LogDebug?.Invoke("Subscribing to mod settings changes.");
+		Main.LogDebug("Subscribing to mod settings changes.");
 		Settings.OnSettingsChanged += OnSettingsChanged;
 		OnSettingsChanged();
 
-		Main.LogDebug?.Invoke("Zoomer setup complete.");
+		Main.LogDebug("Zoomer setup complete.");
 		return isSetup = true;
 	}
 
 	private void OnSettingsChanged()
 	{
-		Main.LogDebug?.Invoke($"Settings changed {{\n\tzoomFactor: {Main.settings.zoomFactor}\n\tzoomInDuration: {Main.settings.zoomInDuration}\n\tzoomOutDuration: {Main.settings.zoomOutDuration}\n\tviewportMeters: {Main.settings.viewportMeters}\n\tviewportHeight: {Main.settings.viewportHeight}\n}}");
+		Main.LogDebug($"Settings changed {{\n\tzoomFactor: {Main.settings.zoomFactor}\n\tzoomInDuration: {Main.settings.zoomInDuration}\n\tzoomOutDuration: {Main.settings.zoomOutDuration}\n\tviewportMeters: {Main.settings.viewportMeters}\n\tviewportHeight: {Main.settings.viewportHeight}\n}}");
 
 		if (quad != null)
 		{
@@ -98,10 +97,10 @@ class Zoomer : MonoBehaviour
 	{
 		if (zoomCoroutine != null)
 		{
-			Main.LogDebug?.Invoke("Stopping zoom coroutine");
+			Main.LogDebug("Stopping zoom coroutine");
 			StopCoroutine(zoomCoroutine);
 		}
-		Main.LogDebug?.Invoke($"Starting zoom coroutine with zoom={(zoomIn ? "in" : "out")}");
+		Main.LogDebug($"Starting zoom coroutine with zoom={(zoomIn ? "in" : "out")}");
 		zoomCoroutine = StartZoomCoroutine(zoomIn);
 		StartCoroutine(zoomCoroutine);
 	}
@@ -117,7 +116,7 @@ class Zoomer : MonoBehaviour
 		float targetZoomFactor = zoomIn ? Main.settings.zoomFactor : 1f;
 		float zoomDuration = zoomIn ? Main.settings.zoomInDuration : Main.settings.zoomOutDuration;
 
-		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
+		Main.LogDebug($"Zoom coroutine [{iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
 
 		yield return null;
 
@@ -129,14 +128,14 @@ class Zoomer : MonoBehaviour
 		while (!Mathf.Approximately(camera.zoomFactor, targetZoomFactor))
 		{
 			camera.zoomFactor = Mathf.SmoothDamp(camera.zoomFactor, targetZoomFactor, ref currentZoomVelocity, zoomDuration);
-			Main.LogDebug?.Invoke($"Zoom coroutine[{++iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
+			Main.LogDebug($"Zoom coroutine[{++iteration:D6}]: {camera.zoomFactor} -> {targetZoomFactor}");
 			yield return null;
 		}
 
 		camera.zoomFactor = targetZoomFactor;
 		if (!zoomIn) { ThirdEye.Main.RequestRender(Main.modEntry.Info.Id, false); }
 
-		Main.LogDebug?.Invoke($"Zoom coroutine [{iteration:D6}]: complete");
+		Main.LogDebug($"Zoom coroutine [{iteration:D6}]: complete");
 
 		zoomCoroutine = null;
 	}

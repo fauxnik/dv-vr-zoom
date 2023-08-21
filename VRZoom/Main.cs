@@ -9,17 +9,18 @@ namespace VRZoom;
 
 public static class Main
 {
-#if RELEASE
-#pragma warning disable CS0649 // It's expected that LogDebug will never be assigned in Release builds
-#endif
-	public static Action<string>? LogDebug;
-#pragma warning restore CS0649
+	public static Action<string> Log = (_) => {};
+	public static Action<string> LogWarning = (message) => { Log($"[Warning] {message}"); };
+	public static Action<string> LogError = (message) => { Log($"[Error] {message}"); };
+	public static Action<string> LogDebug = (_) => {};
+
 	public static Settings settings = new Settings();
 	public static ModEntry? modEntry { get; private set; }
 
 	// Unity Mod Manage Wiki: https://wiki.nexusmods.com/index.php/Category:Unity_Mod_Manager
 	private static bool Load(ModEntry modEntry)
 	{
+		Log = modEntry.Logger.Log;
 #if DEBUG
 		LogDebug = modEntry.Logger.Log;
 #endif

@@ -15,7 +15,7 @@ static class BindInputVr
 		zoomRequested = __instance.SwimRequested;
 		if (wasZoomRequested != zoomRequested)
 		{
-			Main.LogDebug?.Invoke("Change in zoom request detected!");
+			Main.LogDebug("Change in zoom request detected!");
 			GameObject playerCamera = PlayerManager.PlayerCamera.gameObject;
 			Zoomer zoomer = playerCamera.GetComponentInChildren<Zoomer>();
 			if (zoomer == null)
