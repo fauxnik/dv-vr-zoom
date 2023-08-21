@@ -26,7 +26,6 @@ class Zoomer : MonoBehaviour
 
 	private const int viewportLayer = 31;
 	private IEnumerator? zoomCoroutine;
-	// private Camera? overlayCamera;
 	private GameObject? quad;
 	private MeshRenderer? meshRenderer;
 	private float currentZoomVelocity = 0f;
@@ -34,7 +33,9 @@ class Zoomer : MonoBehaviour
 
 	private bool Setup()
 	{
-		if (Main.modEntry == null) { throw new InvalidOperationException("Unexpected null mod entry while setting up Zoomer component."); }
+		Main.LogDebug?.Invoke("Setting up Zoomer component.");
+
+		if (Main.modEntry == null) { throw new InvalidOperationException("Main.modEntry must not be null when setting up Zoomer component."); }
 
 		if (isSetup)
 		{
@@ -44,7 +45,7 @@ class Zoomer : MonoBehaviour
 
 		if (ThirdEye.Main.camera == null)
 		{
-			Main.modEntry.Logger.Log("[Warning] Third Eye camera unavailable during Zoomer setup.");
+			Main.modEntry.Logger.Log("[Error] Third Eye camera unavailable during Zoomer setup.");
 			return false;
 		}
 
@@ -53,44 +54,32 @@ class Zoomer : MonoBehaviour
 		bundle.Unload(false);
 		if (viewportShader == null)
 		{
-			Main.modEntry.Logger.Log("[Error] The viewport shader couldn't be loaded.");
+			Main.modEntry.Logger.Log("[Error] The viewport shader is missing.");
 			return false;
 		}
 
 		AmalgamCamera camera = ThirdEye.Main.camera;
 
+		Main.LogDebug?.Invoke("Setting up viewport quad primitive.");
 		quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		DestroyImmediate(quad.GetComponent<Collider>());
 		quad.transform.SetParent(camera.gameObject.transform, false);
 		quad.layer = viewportLayer;
-		// TODO: can we raise this above the World camera so it always appears in front of objects in the scene?
 		camera.cullingMask &= ~(1 << quad.layer);
 		CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
-		// // Camera.onPostRender += OnPostRender;
-		// overlayCamera = new GameObject().AddComponent<Camera>();
-		// // overlayCamera.gameObject.transform.SetParent(CameraAPI.GetCamera(World).gameObject.transform, false);
-		// overlayCamera.cullingMask = 1 << quad.layer;
-		// overlayCamera.clearFlags = CameraClearFlags.Depth;
-		// // overlayCamera.clearFlags = CameraClearFlags.Color;
-		// // overlayCamera.backgroundColor = Color.clear;
-		// // overlayCamera.depth = CameraAPI.GetCamera(Effects).depth + 1;
-		// // CameraAPI.GetCamera(UI).depth++;
-		// // CameraAPI.GetCamera(Effects).depth++;
-		// // overlayCamera.enabled = false;
 
+		Main.LogDebug?.Invoke("Setting up viewport mesh renderer.");
 		meshRenderer = quad.GetComponent<MeshRenderer>();
 		meshRenderer.sharedMaterial.shader = viewportShader;
 		meshRenderer.sharedMaterial.mainTexture = ThirdEye.Main.renderTexture;
 		meshRenderer.sharedMaterial.renderQueue = (int)RenderQueue.Overlay;
-		// meshRenderer.sharedMaterial.shader = Shader.Find("FX/Flare") ?? meshRenderer.sharedMaterial.shader;
-		// meshRenderer.sharedMaterial.shader = Shader.Find("Unlit/Texture") ?? meshRenderer.sharedMaterial.shader;
-		// meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
-		// meshRenderer.receiveShadows = false;
 		meshRenderer.enabled = false;
 
+		Main.LogDebug?.Invoke("Subscribing to mod settings changes.");
 		Settings.OnSettingsChanged += OnSettingsChanged;
 		OnSettingsChanged();
 
+		Main.LogDebug?.Invoke("Zoomer setup complete.");
 		return isSetup = true;
 	}
 
@@ -104,24 +93,6 @@ class Zoomer : MonoBehaviour
 			quad.transform.localScale = new Vector3(Main.settings.viewportHeight * Screen.width / Screen.height, Main.settings.viewportHeight, quad.transform.localScale.z);
 		}
 	}
-
-	// private void OnPostRender(Camera camera)
-	// {
-	// 	if (!(meshRenderer?.enabled ?? false) || camera != CameraAPI.GetCamera(World)) { return; }
-
-	// 	// backup
-	// 	// int cullingMask = camera.cullingMask;
-	// 	// CameraClearFlags clearFlags = camera.clearFlags;
-
-	// 	// modify & render
-	// 	// camera.cullingMask = 1 << quad.layer;
-	// 	// camera.clearFlags = CameraClearFlags.Nothing;
-	// 	overlayCamera?.Render();
-
-	// 	// restore
-	// 	// camera.cullingMask = cullingMask;
-	// 	// camera.clearFlags = clearFlags;
-	// }
 
 	public void Zoom(bool zoomIn)
 	{
