@@ -402,3 +402,8 @@ FodyWeavers.xsd
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+
+# Unity project directories (must come at after Visual Studio entries to undo ignoring the Package directory)
+!VR Zoom (Unity)/Packages/*
+VR Zoom (Unity)/Library/
+VR Zoom (Unity)/Temp/

@@ -15,6 +15,7 @@
 	<!-- Unity -->
 	<ItemGroup>
 		<Reference Include="UnityEngine"/>
+		<Reference Include="UnityEngine.AssetBundleModule"/>
 		<Reference Include="UnityEngine.CoreModule"/>
 		<Reference Include="UnityEngine.PhysicsModule"/>
 	</ItemGroup>

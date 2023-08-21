@@ -2,6 +2,7 @@ using CameraManager;
 using static CameraManager.CameraType;
 using System;
 using System.Collections;
+using System.IO;
 using ThirdEye;
 using UnityEngine;
 using static UnityEngine.Object;
@@ -25,7 +26,7 @@ class Zoomer : MonoBehaviour
 
 	private const int viewportLayer = 31;
 	private IEnumerator? zoomCoroutine;
-	private Camera? worldCamera;
+	// private Camera? overlayCamera;
 	private GameObject? quad;
 	private MeshRenderer? meshRenderer;
 	private float currentZoomVelocity = 0f;
@@ -33,15 +34,26 @@ class Zoomer : MonoBehaviour
 
 	private bool Setup()
 	{
+		if (Main.modEntry == null) { throw new InvalidOperationException("Unexpected null mod entry while setting up Zoomer component."); }
+
 		if (isSetup)
 		{
-			Main.modEntry?.Logger.Log("[Warning] Trying to set up a Zoomer component that's already been set up");
+			Main.modEntry.Logger.Log("[Warning] Trying to set up a Zoomer component that's already been set up.");
 			return false;
 		}
 
 		if (ThirdEye.Main.camera == null)
 		{
-			Main.modEntry?.Logger.Log("[Warning] Third Eye camera unavailable. Skipping Zoomer setup.");
+			Main.modEntry.Logger.Log("[Warning] Third Eye camera unavailable during Zoomer setup.");
+			return false;
+		}
+
+		AssetBundle bundle = AssetBundle.LoadFromFile(Path.Combine(new string [] { Main.modEntry.Path, "vr-zoom" }));
+		Shader viewportShader = bundle.LoadAsset<Shader>("Assets/Shaders/TextureOverlay.shader");
+		bundle.Unload(false);
+		if (viewportShader == null)
+		{
+			Main.modEntry.Logger.Log("[Error] The viewport shader couldn't be loaded.");
 			return false;
 		}
 
@@ -54,19 +66,27 @@ class Zoomer : MonoBehaviour
 		// TODO: can we raise this above the World camera so it always appears in front of objects in the scene?
 		camera.cullingMask &= ~(1 << quad.layer);
 		CameraAPI.GetCamera(World).cullingMask |= 1 << quad.layer;
-		// Camera.onPostRender += OnPostRender;
-		// worldCamera = CameraAPI.CloneCamera(CameraAPI.GetCamera(World));
-		// worldCamera.gameObject.transform.SetParent(CameraAPI.GetCamera(World).gameObject.transform, false);
-		// worldCamera.cullingMask = 1 << quad.layer;
-		// worldCamera.clearFlags = CameraClearFlags.Depth;
-		// worldCamera.enabled = false;
+		// // Camera.onPostRender += OnPostRender;
+		// overlayCamera = new GameObject().AddComponent<Camera>();
+		// // overlayCamera.gameObject.transform.SetParent(CameraAPI.GetCamera(World).gameObject.transform, false);
+		// overlayCamera.cullingMask = 1 << quad.layer;
+		// overlayCamera.clearFlags = CameraClearFlags.Depth;
+		// // overlayCamera.clearFlags = CameraClearFlags.Color;
+		// // overlayCamera.backgroundColor = Color.clear;
+		// // overlayCamera.depth = CameraAPI.GetCamera(Effects).depth + 1;
+		// // CameraAPI.GetCamera(UI).depth++;
+		// // CameraAPI.GetCamera(Effects).depth++;
+		// // overlayCamera.enabled = false;
 
 		meshRenderer = quad.GetComponent<MeshRenderer>();
+		meshRenderer.sharedMaterial.shader = viewportShader;
 		meshRenderer.sharedMaterial.mainTexture = ThirdEye.Main.renderTexture;
-		meshRenderer.enabled = false;
+		meshRenderer.sharedMaterial.renderQueue = (int)RenderQueue.Overlay;
+		// meshRenderer.sharedMaterial.shader = Shader.Find("FX/Flare") ?? meshRenderer.sharedMaterial.shader;
 		// meshRenderer.sharedMaterial.shader = Shader.Find("Unlit/Texture") ?? meshRenderer.sharedMaterial.shader;
 		// meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
 		// meshRenderer.receiveShadows = false;
+		meshRenderer.enabled = false;
 
 		Settings.OnSettingsChanged += OnSettingsChanged;
 		OnSettingsChanged();
@@ -96,7 +116,7 @@ class Zoomer : MonoBehaviour
 	// 	// modify & render
 	// 	// camera.cullingMask = 1 << quad.layer;
 	// 	// camera.clearFlags = CameraClearFlags.Nothing;
-	// 	worldCamera?.Render();
+	// 	overlayCamera?.Render();
 
 	// 	// restore
 	// 	// camera.cullingMask = cullingMask;
