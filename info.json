@@ -1,10 +1,18 @@
 {
 	"Id": "VRCameraZoom",
-	"Version": "2.0.2",
+	"Version": "3.0.0-beta.3",
 	"DisplayName": "VR Zoom",
 	"Author": "fauxnik",
 	"AssemblyName": "VRZoom.dll",
 	"EntryMethod": "VRZoom.Main.Load",
+	"Requirements": [
+		"CameraManager",
+		"ThirdEye"
+	],
+	"LoadAfter": [
+		"CameraManager",
+		"ThirdEye"
+	],
 	"ManagerVersion": "0.27.3",
 	"Repository": "https://raw.githubusercontent.com/fauxnik/dv-vr-zoom/blob/main/repository.json"
 }

@@ -1,4 +1,6 @@
+using CameraManager;
 using HarmonyLib;
+using UnityEngine;
 
 namespace VRZoom;
 
@@ -13,10 +15,17 @@ static class BindInputVr
 		zoomRequested = __instance.SwimRequested;
 		if (wasZoomRequested != zoomRequested)
 		{
-			Main.LogDebug?.Invoke("Change in zoom request detected!");
-			Zoomer zoomer =
-				PlayerManager.PlayerCamera.gameObject.GetComponent<Zoomer>() ??
-				Zoomer.CreateComponent(PlayerManager.PlayerCamera.gameObject, PlayerManager.PlayerCamera.fieldOfView);
+			Main.LogDebug("Change in zoom request detected!");
+			GameObject playerCamera = PlayerManager.PlayerCamera.gameObject;
+			Zoomer zoomer = playerCamera.GetComponentInChildren<Zoomer>();
+			if (zoomer == null)
+			{
+				if (playerCamera.GetComponentInChildren<AmalgamCamera>() is AmalgamCamera amalgamCamera)
+				{
+					zoomer = Zoomer.CreateComponent(amalgamCamera.gameObject);
+				}
+				else { return; }
+			}
 			zoomer.Zoom(zoomRequested);
 		}
 	}
